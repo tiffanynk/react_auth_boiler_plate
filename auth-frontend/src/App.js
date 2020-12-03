@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
-import SignupForm from './Components/SignupForm';
-import LoginForm from './Components/LoginForm';
+import SignupForm from './pages/SignupForm';
+import LoginForm from './pages/LoginForm';
+import PrivateRoute from './Components/PrivateRoute';
+import {Route, Switch} from 'react-router-dom';
+import HomePage from './pages/HomePage';
 
 const baseURL = 'http://localhost:3000/'
 
@@ -9,6 +12,26 @@ class App extends Component {
   state = {
     user: {},
     error: ''
+  }
+
+  componentDidMount(){
+    let token = localStorage.getItem('token')
+    if(token){
+      fetch(baseURL + 'profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(result => {
+        if(result.id){
+          this.setState({
+            user: result
+          })
+        }
+      })
+    }
   }
 
   //notice that the keys in the user object match the keys in the backend's snakecase convention
@@ -32,7 +55,7 @@ class App extends Component {
     .then(user => this.setState({ user }))
   }
 
-  login = (username, password) => {
+  login = (username, password, history) => {
     fetch(baseURL + 'login', {
       method: 'POST',
       headers: {
@@ -52,6 +75,7 @@ class App extends Component {
         this.setState({
           user: result.user
         })
+        history.push('/')
       } else {
         this.setState({
           error: result.error
@@ -63,15 +87,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        { this.state.user.username
-        ? <h2>Welcome, {this.state.user.first_name}</h2>
-        : (
-          <>
-          <SignupForm signUp={this.signUp} />
-          <LoginForm login={this.login} error={this.state.error}/>
-          </>
-          )
-        }
+        <Switch>
+          <Route exact path='/signup' render={(routerProps) => <SignupForm {...routerProps} signUp={this.signUp} />} />
+          <Route exact path='/login' render={(routerProps) => <LoginForm {...routerProps} login={this.login} error={this.state.error}/>} />
+          <PrivateRoute path='/' component={HomePage} user={this.state.user} />
+        </Switch>
       </div>
     )
   }

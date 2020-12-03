@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 class SignupForm extends Component {
     state = {
@@ -32,6 +33,10 @@ class SignupForm extends Component {
                 <input name='username' value={this.state.username} onChange={this.handleChange} />
                 <label>Password</label>
                 <input type='password' value={this.state.password} name='password' onChange={this.handleChange} />
+                <p>
+                    Already a user?
+                    <Link to='/login'> Login</Link>
+                </p>
                 <input type='submit' value='Sign Up' />
             </form>
         )
